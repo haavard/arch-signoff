@@ -1,0 +1,8 @@
+# arch-signoff
+
+Specify your ArchWeb username and password in `ARCHWEB_USERNAME` and
+`ARCHWEB_PASSWORD` environment variables. Run `signoff` to get a list of
+packages you can sign off. `signoff -i` lets you interactively sign off
+packages.
+
+See LICENSE for license details.
