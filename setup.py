@@ -9,7 +9,7 @@ with open("README") as readme_file:
 setup(
     name="arch-signoff",
     use_scm_version=True,
-    description="Sign-off Arch Linux test packages",
+    description="Sign off Arch Linux test packages",
     long_description=readme_data,
     author="Håvard Pettersson",
     author_email="mail@haavard.me",

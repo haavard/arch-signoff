@@ -56,7 +56,7 @@ class SignoffSession:
             allow_redirects=False)
 
         if not 300 <= response.status_code < 400:
-            raise click.BadParameter("invalid username or password")
+            raise click.BadParameter("could not log in -- check credentials")
 
     def get_signoffs(self):
         response = self.session.get(self._signoffs_url())
@@ -264,21 +264,25 @@ def warn_outdated(signoff_pkg, local_pkg):
 @click.option("-i", "--interactive", "action", flag_value="interactive",
         help="interactively sign off packages")
 @click.option("-u", "--uninstalled", is_flag=True, help="include uninstalled "
-        "packages when signing off")
+        "packages when listing")
 @click.option("-a", "--signed-off", is_flag=True, help="include signed-off "
-        "packages")
+        "packages when listing")
 @click.option("-q", "--quiet", is_flag=True, help="be less verbose when "
         "listing packages")
 @click.option("--username", prompt=True, envvar="ARCHWEB_USERNAME",
-        help="ArchWeb username")
+        help="ArchWeb username (ARCHWEB_USERNAME env. var.)")
 @click.option("--password", prompt=True, hide_input=True,
-        envvar="ARCHWEB_PASSWORD", help="ArchWeb password")
+        envvar="ARCHWEB_PASSWORD", help="ArchWeb password (ARCHWEB_PASSWORD "
+        "env. var.)")
 @click.option("-b", "--db-path", type=click.Path(), default="/var/lib/pacman",
         help="pacman database path")
 @click.option("--noconfirm", is_flag=True, help="don't ask for confirmation")
 @click.argument("package", nargs=-1)
 def main(action, uninstalled, signed_off, quiet, username, password, package,
          db_path, noconfirm):
+    """
+    Interface with Arch Linux package signoffs.
+    """
     if action is None:
         if package:
             action = "signoff"
