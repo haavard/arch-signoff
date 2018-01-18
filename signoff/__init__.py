@@ -181,8 +181,10 @@ def format_signoff_short(signoff_pkg, local_pkg, options):
         name=click.style(signoff_pkg["pkgbase"], bold=True),
         version=click.style(signoff_pkg["version"], bold=True, fg="green"))
 
-    # show installed indicator if we're listing uninstalled packages
-    if options.show_uninstalled and local_pkg:
+    # show outdated or installed indicator if appropriate
+    if local_pkg is not None and local_pkg.version != signoff_pkg["version"]:
+        formatted += click.style(" (outdated)", bold=True, fg="red")
+    elif options.show_uninstalled and local_pkg:
         formatted += click.style(" (installed)", bold=True, fg="blue")
 
     # show signed-off indicator if we're listing signed off packages
@@ -236,7 +238,20 @@ def format_signoff_long(signoff_pkg, local_pkg, options):
         signed_off = "Revoked"
     attributes.append(format_attr("Signed off", signed_off))
 
-    return "\n".join(attributes) + "\n"
+    return "\n".join(attributes)
+
+
+def warn_outdated(signoff_pkg, local_pkg):
+    """
+    Echo a warning message if local and sign-off package versions differ.
+    """
+    if local_pkg.version != signoff_pkg["version"]:
+        click.echo(click.style("Warning:", fg="red", bold=True) + " local "
+        "{pkg} ({local_version}) is not the same as sign-off version "
+        "({signoff_version})".format(
+            pkg=signoff_pkg["pkgbase"],
+            local_version=local_pkg.version,
+            signoff_version=signoff_pkg["version"]))
 
 
 @click.command(context_settings={"help_option_names": ("-h", "--help")})
@@ -295,22 +310,29 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
     if action == "list":
         for signoff_pkg, local_pkg in packages:
             click.echo(format_signoff(signoff_pkg, local_pkg, options))
+            if not options.quiet:
+                click.echo()
     elif action == "signoff":
         if options.noconfirm or click.confirm("Sign off {}?".format(
                 click.style("  ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
+                warn_outdated(signoff_pkg, local_pkg)
                 session.signoff_package(signoff_pkg)
                 click.echo("Signed off {}.".format(signoff_pkg["pkgbase"]))
     elif action == "revoke":
         if options.noconfirm or click.confirm("Revoke sign-off for {}?".format(
                 click.style("  ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
+                warn_outdated(signoff_pkg, local_pkg)
                 session.revoke_package(signoff_pkg)
                 click.echo("Revoked sign-off for {}.".format(
                     signoff_pkg["pkgbase"]))
     elif action == "interactive":
         for signoff_pkg, local_pkg in packages:
             click.echo(format_signoff(signoff_pkg, local_pkg, options))
+            warn_outdated(signoff_pkg, local_pkg)
+            if not options.quiet:
+                click.echo()
 
             pkgbase = click.style(signoff_pkg["pkgbase"], bold=True)
             signed_off = signoff_status(signoff_pkg,
