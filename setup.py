@@ -22,7 +22,7 @@ setup(
         "Environment :: Console",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
+        "Operating System :: POSIX :: Linux",
     ],
 
     setup_requires=["setuptools_scm"],
