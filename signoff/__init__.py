@@ -318,14 +318,14 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
                 click.echo()
     elif action == "signoff":
         if options.noconfirm or click.confirm("Sign off {}?".format(
-                click.style("  ".join(pkgbases), bold=True))):
+                click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
                 warn_outdated(signoff_pkg, local_pkg)
                 session.signoff_package(signoff_pkg)
                 click.echo("Signed off {}.".format(signoff_pkg["pkgbase"]))
     elif action == "revoke":
         if options.noconfirm or click.confirm("Revoke sign-off for {}?".format(
-                click.style("  ".join(pkgbases), bold=True))):
+                click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
                 warn_outdated(signoff_pkg, local_pkg)
                 session.revoke_package(signoff_pkg)
