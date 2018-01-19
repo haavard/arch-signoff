@@ -311,27 +311,29 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
             raise click.BadParameter(
                 "package base {} not found in signoffs".format(pkgbase))
 
-    if action == "list":
+    if action == "list":  # output packages and exit
         for signoff_pkg, local_pkg in packages:
             click.echo(format_signoff(signoff_pkg, local_pkg, options))
             if not options.quiet:
-                click.echo()
-    elif action == "signoff":
+                click.echo()  # add a line between packages
+    elif action == "signoff":  # sign-off packages
+        for signoff_pkg, local_pkg in packages:
+            warn_outdated(signoff_pkg, local_pkg)
         if options.noconfirm or click.confirm("Sign off {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
-                warn_outdated(signoff_pkg, local_pkg)
                 session.signoff_package(signoff_pkg)
                 click.echo("Signed off {}.".format(signoff_pkg["pkgbase"]))
-    elif action == "revoke":
+    elif action == "revoke":  # revoke sign-offs
+        for signoff_pkg, local_pkg in packages:
+            warn_outdated(signoff_pkg, local_pkg)
         if options.noconfirm or click.confirm("Revoke sign-off for {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
-                warn_outdated(signoff_pkg, local_pkg)
                 session.revoke_package(signoff_pkg)
                 click.echo("Revoked sign-off for {}.".format(
                     signoff_pkg["pkgbase"]))
-    elif action == "interactive":
+    elif action == "interactive":  # interactively sign-off or revoke
         for signoff_pkg, local_pkg in packages:
             click.echo(format_signoff(signoff_pkg, local_pkg, options))
             warn_outdated(signoff_pkg, local_pkg)
