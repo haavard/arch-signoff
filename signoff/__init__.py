@@ -8,19 +8,12 @@ import time
 import click
 import dateutil.parser
 import pyalpm
-import requests
-
 import pycman.pkginfo
+import requests
 
 # monkeypatch pycman
 pycman.pkginfo.ATTRNAME_FORMAT = '%-13s : '
 pycman.pkginfo.ATTR_INDENT = 16 * ' '
-
-
-class Options:
-    def __init__(self, **kwargs):
-        for kwarg in kwargs:
-            setattr(self, kwarg, kwargs[kwarg])
 
 
 class SignoffSession:
@@ -59,6 +52,9 @@ class SignoffSession:
             raise click.BadParameter("could not log in -- check credentials")
 
     def get_signoffs(self):
+        """
+        Fetch signoff packages.
+        """
         response = self.session.get(self._signoffs_url())
         response_json = response.json()
         assert response_json["version"] == 2
@@ -66,9 +62,15 @@ class SignoffSession:
         return response_json["signoff_groups"]
 
     def signoff_package(self, package):
+        """
+        Signoff a package.
+        """
         self.session.get(self._signoff_url(package)).raise_for_status()
 
     def revoke_package(self, package):
+        """
+        Revoke a package signoff.
+        """
         self.session.get(self._revoke_url(package)).raise_for_status()
 
     def _login_url(self):
@@ -98,6 +100,7 @@ def signoff_status(package, user):
         reverse=True)
 
     for signoff in signoffs:
+        # skip until we find a signoff by the specified user
         if signoff["user"] != user:
             continue
 
@@ -123,8 +126,8 @@ def list_signoffs(signoff_session, alpm_handle):
 
 def filter_signoffs(signoffs, options):
     """
-    Filter a list of (signoff_package, local_package) tuples with respect to
-    the given options.
+    Filter a sequence of (signoff_package, local_package) tuples with respect
+    to the given options.
     """
     for signoff_package, local_package in signoffs:
         # command-line packages override other filters
@@ -133,11 +136,13 @@ def filter_signoffs(signoffs, options):
                 yield (signoff_package, local_package)
             continue
 
+        # check signoff status
         signed_off = signoff_status(signoff_package,
                                     options.username) == "signed-off"
         if signed_off and not options.show_signed_off:
             continue
 
+        # check install stauts
         if local_package is None and not options.show_uninstalled:
             continue
 
@@ -146,7 +151,8 @@ def filter_signoffs(signoffs, options):
 
 def format_signoff_user(signoff):
     """
-    Format a single user signoff dictionary.
+    Format a single user signoff dictionary. Return "<username>" if signoff is
+    valid, and "<username> (revoked)" if the signoff is revoked.
     """
     if signoff["revoked"]:
         return signoff["user"] + " (revoked)"
@@ -203,32 +209,38 @@ def format_signoff_long(signoff_pkg, local_pkg, options):
     """
     attributes = []
 
+    # package base/name as appropriate
     if len(signoff_pkg["pkgnames"]) > 1:
         attributes.append(format_attr("Package base", signoff_pkg["pkgbase"]))
         attributes.append(format_attr("Packages", signoff_pkg["pkgnames"]))
     else:
         attributes.append(format_attr("Package", signoff_pkg["pkgbase"]))
 
+    # version, including local version if they differ
     attributes.append(format_attr("Version", signoff_pkg["version"]))
     if local_pkg:
         if local_pkg.version != signoff_pkg["version"]:
             attributes.append(format_attr("Local version", local_pkg.version))
 
+    # last update, and install date if package is installed
     last_update = dateutil.parser.parse(signoff_pkg["last_update"]).timestamp()
     attributes.append(format_attr("Last updated", last_update, format="time"))
     if local_pkg:
         attributes.append(
             format_attr("Install date", local_pkg.installdate, format="time"))
 
+    # packager and comments
     attributes.append(format_attr("Packager", signoff_pkg["packager"]))
     attributes.append(
         format_attr("Comments", signoff_pkg["comments"] or "None"))
 
+    # signoffs
     signoffs = [
         format_signoff_user(signoff) for signoff in signoff_pkg["signoffs"]
     ]
     attributes.append(format_attr("Signoffs", signoffs))
 
+    # current user signoff status
     status = signoff_status(signoff_pkg, options.username)
     if status is None:
         signed_off = "No"
@@ -241,7 +253,7 @@ def format_signoff_long(signoff_pkg, local_pkg, options):
     return "\n".join(attributes)
 
 
-def warn_outdated(signoff_pkg, local_pkg):
+def warn_if_outdated(signoff_pkg, local_pkg):
     """
     Echo a warning message if local and sign-off package versions differ.
     """
@@ -252,6 +264,16 @@ def warn_outdated(signoff_pkg, local_pkg):
             pkg=signoff_pkg["pkgbase"],
             local_version=local_pkg.version,
             signoff_version=signoff_pkg["version"]))
+
+
+class Options:
+    """
+    Simple helper class for holding arbitrary command-line options.
+    """
+
+    def __init__(self, **kwargs):
+        for kwarg in kwargs:
+            setattr(self, kwarg, kwargs[kwarg])
 
 
 @click.command(context_settings={"help_option_names": ("-h", "--help")})
@@ -299,13 +321,16 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
         username=username,
         noconfirm=noconfirm)
 
+    # initialize alpm handle and signoff session
     alpm_handle = pyalpm.Handle("/", options.db_path)
     session = SignoffSession(options.username, password)
 
+    # fetch and filter signoff packages
     signoffs = list(list_signoffs(session, alpm_handle))
     packages = list(filter_signoffs(signoffs, options))
     pkgbases = set(signoff_pkg["pkgbase"] for signoff_pkg, _ in packages)
 
+    # if packages are supplied as parameters, validate them
     for pkgbase in options.packages:
         if pkgbase not in pkgbases:
             raise click.BadParameter(
@@ -318,7 +343,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
                 click.echo()  # add a line between packages
     elif action == "signoff":  # sign-off packages
         for signoff_pkg, local_pkg in packages:
-            warn_outdated(signoff_pkg, local_pkg)
+            warn_if_outdated(signoff_pkg, local_pkg)
         if options.noconfirm or click.confirm("Sign off {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
@@ -326,7 +351,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
                 click.echo("Signed off {}.".format(signoff_pkg["pkgbase"]))
     elif action == "revoke":  # revoke sign-offs
         for signoff_pkg, local_pkg in packages:
-            warn_outdated(signoff_pkg, local_pkg)
+            warn_if_outdated(signoff_pkg, local_pkg)
         if options.noconfirm or click.confirm("Revoke sign-off for {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
@@ -336,10 +361,11 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
     elif action == "interactive":  # interactively sign-off or revoke
         for signoff_pkg, local_pkg in packages:
             click.echo(format_signoff(signoff_pkg, local_pkg, options))
-            warn_outdated(signoff_pkg, local_pkg)
+            warn_if_outdated(signoff_pkg, local_pkg)
             if not options.quiet:
                 click.echo()
 
+            # check if we're signing off or revoking
             pkgbase = click.style(signoff_pkg["pkgbase"], bold=True)
             signed_off = signoff_status(signoff_pkg,
                                         options.username) == "signed-off"
@@ -349,6 +375,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
             else:
                 prompt = "Sign off {}?".format(pkgbase)
 
+            # confirm and signoff/revoke
             if click.confirm(prompt):
                 if signed_off:
                     session.revoke_package(signoff_pkg)
