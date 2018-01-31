@@ -3,7 +3,7 @@
 
 from setuptools import setup
 
-with open("README") as readme_file:
+with open("README.md") as readme_file:
     readme_data = readme_file.read()
 
 setup(
