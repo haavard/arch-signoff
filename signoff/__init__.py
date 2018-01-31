@@ -51,6 +51,12 @@ class SignoffSession:
         if not 300 <= response.status_code < 400:
             raise click.BadParameter("could not log in -- check credentials")
 
+    def logout(self):
+        """
+        Log out of Archweb.
+        """
+        self.session.get(self._logout_url())
+
     def get_signoffs(self):
         """
         Fetch signoff packages.
@@ -75,6 +81,9 @@ class SignoffSession:
 
     def _login_url(self):
         return urllib.parse.urljoin(self.base_url, "/login/")
+
+    def _logout_url(self):
+        return urllib.parse.urljoin(self.base_url, "/logout/")
 
     def _signoffs_url(self):
         return urllib.parse.urljoin(self.base_url, "/packages/signoffs/json/")
@@ -385,6 +394,8 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
                     click.echo("Signed off {}.".format(pkgbase))
 
             click.echo()
+
+    session.logout()
 
 
 if __name__ == "__main__":
