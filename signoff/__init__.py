@@ -266,7 +266,7 @@ def warn_if_outdated(signoff_pkg, local_pkg):
     """
     if local_pkg.version != signoff_pkg["version"]:
         click.echo(
-            click.style("Warning:", fg="red", bold=True) + " local "
+            click.style("warning:", fg="yellow", bold=True) + " local "
             "{pkg} ({local_version}) is not the same as sign-off version "
             "({signoff_version})".format(
                 pkg=signoff_pkg["pkgbase"],
