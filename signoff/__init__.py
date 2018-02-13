@@ -43,9 +43,7 @@ class SignoffSession:
                 "password": password,
                 "csrfmiddlewaretoken": csrftoken
             },
-            headers={
-                "referer": self._login_url()
-            },
+            headers={"referer": self._login_url()},
             allow_redirects=False)
 
         if not 300 <= response.status_code < 400:
@@ -267,12 +265,13 @@ def warn_if_outdated(signoff_pkg, local_pkg):
     Echo a warning message if local and sign-off package versions differ.
     """
     if local_pkg.version != signoff_pkg["version"]:
-        click.echo(click.style("Warning:", fg="red", bold=True) + " local "
-        "{pkg} ({local_version}) is not the same as sign-off version "
-        "({signoff_version})".format(
-            pkg=signoff_pkg["pkgbase"],
-            local_version=local_pkg.version,
-            signoff_version=signoff_pkg["version"]))
+        click.echo(
+            click.style("Warning:", fg="red", bold=True) + " local "
+            "{pkg} ({local_version}) is not the same as sign-off version "
+            "({signoff_version})".format(
+                pkg=signoff_pkg["pkgbase"],
+                local_version=local_pkg.version,
+                signoff_version=signoff_pkg["version"]))
 
 
 class Options:
