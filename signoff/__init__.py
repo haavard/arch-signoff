@@ -274,6 +274,15 @@ def warn_if_outdated(signoff_pkg, local_pkg):
                 signoff_version=signoff_pkg["version"]))
 
 
+def confirm(text, *args, **kwargs):
+    """
+    Wrapper around click.confirm that adds minor styling to the prompt.
+    """
+    prefix = click.style(":: ", bold=True, fg="blue")
+    styled = click.style(text, bold=True)
+    return click.confirm(prefix + styled, *args, **kwargs)
+
+
 class Options:
     """
     Simple helper class for holding arbitrary command-line options.
@@ -352,7 +361,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
     elif action == "signoff":  # sign-off packages
         for signoff_pkg, local_pkg in packages:
             warn_if_outdated(signoff_pkg, local_pkg)
-        if options.noconfirm or click.confirm("Sign off {}?".format(
+        if options.noconfirm or confirm("Sign off {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
                 session.signoff_package(signoff_pkg)
@@ -360,7 +369,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
     elif action == "revoke":  # revoke sign-offs
         for signoff_pkg, local_pkg in packages:
             warn_if_outdated(signoff_pkg, local_pkg)
-        if options.noconfirm or click.confirm("Revoke sign-off for {}?".format(
+        if options.noconfirm or confirm("Revoke sign-off for {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
                 session.revoke_package(signoff_pkg)
@@ -374,7 +383,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
                 click.echo()
 
             # check if we're signing off or revoking
-            pkgbase = click.style(signoff_pkg["pkgbase"], bold=True)
+            pkgbase = signoff_pkg["pkgbase"]
             signed_off = signoff_status(signoff_pkg,
                                         options.username) == "signed-off"
 
@@ -384,7 +393,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
                 prompt = "Sign off {}?".format(pkgbase)
 
             # confirm and signoff/revoke
-            if click.confirm(prompt):
+            if confirm(prompt):
                 if signed_off:
                     session.revoke_package(signoff_pkg)
                     click.echo("Revoked sign-off for {}.".format(pkgbase))
