@@ -11,5 +11,14 @@ using [pass](https://www.passwordstore.org/)
 alias signoff='ARCHWEB_PASSWORD="$(pass archweb)" signoff'
 ```
 
-See LICENSE for license details.
+## Dependencies
 
+* pyalpm
+* python-click
+* python-dateutil
+* python-requests
+* python-setuptools
+
+## LICENSE
+
+See LICENSE for license details.
