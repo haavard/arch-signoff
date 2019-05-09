@@ -63,7 +63,7 @@ Environment
 *ARCHWEB_USERNAME*::
 	The archweb username to use to log in to archweb.
 
-*ARCHWEB_USERNAME*::
+*ARCHWEB_PASSWORD*::
 	The archweb password to use to log in to archweb.
 
 Authors
