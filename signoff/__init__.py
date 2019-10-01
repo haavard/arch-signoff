@@ -384,8 +384,12 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
         if options.noconfirm or confirm("Sign off {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
-                session.signoff_package(signoff_pkg)
-                click.echo("Signed off {}.".format(signoff_pkg["pkgbase"]))
+                try:
+                    session.signoff_package(signoff_pkg)
+                except requests.exceptions.HTTPError as e:
+                    click.echo("Could not sign off {} ({})".format(signoff_pkg["pkgbase"], e))
+                else:
+                    click.echo("Signed off {}.".format(signoff_pkg["pkgbase"]))
     elif action == "revoke":  # revoke sign-offs
         for signoff_pkg, local_pkg in packages:
             warn_if_outdated(signoff_pkg, local_pkg)
