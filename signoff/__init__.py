@@ -200,6 +200,10 @@ def format_signoff_short(signoff_pkg, local_pkg, options):
     elif options.show_uninstalled and local_pkg:
         formatted += click.style(" (installed)", bold=True, fg="blue")
 
+    # show known bad indicator
+    if signoff_pkg["known_bad"]:
+        formatted += click.style(" (bad)", bold=True, fg="red")
+
     # show signed-off indicator if we're listing signed off packages
     status = signoff_status(signoff_pkg, options.username)
     if options.show_signed_off and status == "signed-off":
@@ -257,6 +261,10 @@ def format_signoff_long(signoff_pkg, local_pkg, options):
         signed_off = "Revoked"
     attributes.append(format_attr("Signed off", signed_off))
 
+    # bad status
+    if signoff_pkg["known_bad"]:
+        attributes.append(format_attr("Known bad", "Yes"))
+
     return "\n".join(attributes)
 
 
@@ -272,6 +280,17 @@ def warn_if_outdated(signoff_pkg, local_pkg):
                 pkg=signoff_pkg["pkgbase"],
                 local_version=local_pkg.version,
                 signoff_version=signoff_pkg["version"]))
+
+
+def warn_if_bad(signoff_pkg):
+    """
+    Echo a warning message if sign-off package is bad.
+    """
+    if signoff_pkg["known_bad"]:
+        click.echo(
+            click.style("warning:", fg="yellow", bold=True) +
+            " {pkg} is known to be bad".format(
+                pkg=signoff_pkg["pkgbase"]))
 
 
 def confirm(text, *args, **kwargs):
@@ -361,6 +380,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
     elif action == "signoff":  # sign-off packages
         for signoff_pkg, local_pkg in packages:
             warn_if_outdated(signoff_pkg, local_pkg)
+            warn_if_bad(signoff_pkg)
         if options.noconfirm or confirm("Sign off {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
@@ -369,6 +389,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
     elif action == "revoke":  # revoke sign-offs
         for signoff_pkg, local_pkg in packages:
             warn_if_outdated(signoff_pkg, local_pkg)
+            warn_if_bad(signoff_pkg)
         if options.noconfirm or confirm("Revoke sign-off for {}?".format(
                 click.style(" ".join(pkgbases), bold=True))):
             for signoff_pkg, local_pkg in packages:
@@ -379,6 +400,7 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
         for signoff_pkg, local_pkg in packages:
             click.echo(format_signoff(signoff_pkg, local_pkg, options))
             warn_if_outdated(signoff_pkg, local_pkg)
+            warn_if_bad(signoff_pkg)
             if not options.quiet:
                 click.echo()
 
