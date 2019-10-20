@@ -202,7 +202,7 @@ def format_signoff_short(signoff_pkg, local_pkg, options):
 
     # show known bad indicator
     if signoff_pkg["known_bad"]:
-        formatted += click.style(" (bad)", bold=True, fg="red")
+        formatted += click.style(" (known bad)", bold=True, fg="red")
 
     # show signed-off indicator if we're listing signed off packages
     status = signoff_status(signoff_pkg, options.username)
