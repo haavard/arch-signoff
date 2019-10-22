@@ -1,16 +1,24 @@
-# arch-signoff
+# Arch Linux Signoff Tool
 
-Run `signoff` to get a list of packages you can [sign off][1]. `signoff -i`
-lets you interactively sign off packages. See [asciinema][2] for a demo.
+The `signoff` tool can be used by members of the [Arch Testing Team](https://wiki.archlinux.org/index.php/Arch_Testing_Team) to make it easier
+to sign off packages. `signoff -i` lets you interactively sign off packages. See [asciinema](https://asciinema.org/a/nfTIZNEVcJmP0a8uEfe5MCiej) for a demo.
 
 To simplify authentication, specify your ArchWeb username and password in the
 `ARCHWEB_USERNAME` and `ARCHWEB_PASSWORD` environment variables. For instance,
-using [pass][3]:
+using [pass](https://www.passwordstore.org/)
 
-    alias signoff='ARCHWEB_PASSWORD="$(pass archweb)" signoff'
+```
+alias signoff='ARCHWEB_PASSWORD="$(pass archweb)" signoff'
+```
+
+## Dependencies
+
+* pyalpm
+* python-click
+* python-dateutil
+* python-requests
+* python-setuptools
+
+## LICENSE
 
 See LICENSE for license details.
-
-[1]: https://lists.archlinux.org/pipermail/arch-dev-public/2016-July/028191.html
-[2]: https://asciinema.org/a/nfTIZNEVcJmP0a8uEfe5MCiej
-[3]: https://www.passwordstore.org/

@@ -1,0 +1,71 @@
+/////
+vim:set ts=4 sw=4 syntax=asciidoc noet:
+/////
+signoff(1)
+==========
+
+Name
+----
+signoff - Signoff or revoke Arch Linux Testing packages
+
+Synopsis
+--------
+signoff [options] [package]
+
+Description
+-----------
+Packages in Arch Linux's testing repositories can be signed off as fully
+functional by the Arch Linux Testing Team and after a certain amount of
+signoffs promoted to the normal repositories. The 'signoff' tool is created for
+the Arch Linux Testing Team to make it easier to sign off packages in an
+interactive way.
+
+Options
+-------
+*-s, \--signoff* 'package'::
+	Signoff the specified package.
+
+*-r, \--revoke* 'package'::
+	Revoke the specified package.
+
+*-l, \--list*::
+	List of packages that can be signed off.
+
+*-i, \--interactive*::
+	Interactively sign off packages.
+
+*-u, \--uninstalled*::
+	Include uinstalled packages when listing.
+
+*-a, \--signed-off*::
+	Include signed-off packages when listing.
+
+*-q, \--quiet*::
+	The path to the pacman database.
+
+*-b, \--db-path* <dbpath>::
+	Be less verbose when listing packages.
+
+*\--username* 'username'::
+	ArchWeb username.
+
+*\--password* 'password'::
+	ArchWeb password.
+
+*\--noconfirm*::
+	Don't ask for confirmation.
+
+*-h, \--help*::
+	Show this message and exit.
+
+Environment
+-----------
+*ARCHWEB_USERNAME*::
+	The archweb username to use to log in to archweb.
+
+*ARCHWEB_PASSWORD*::
+	The archweb password to use to log in to archweb.
+
+Authors
+-------
+Jelle van der Waa <jelle@archlinux.org>

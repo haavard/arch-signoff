@@ -13,7 +13,7 @@ setup(
     long_description=readme_data,
     author="Håvard Pettersson",
     author_email="mail@haavard.me",
-    url="https://github.com/haavard/arch-signoff",
+    url="https://github.com/archlinux/arch-signoff",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: ISC License (ISCL)",
@@ -29,7 +29,7 @@ setup(
     install_requires=[
         "click",
         "python-dateutil",
-        "pyalpm",
+        "pyalpm>=0.9.0",
         "requests"
     ],
 
