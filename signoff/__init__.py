@@ -231,10 +231,10 @@ def format_signoff_long(signoff_pkg, local_pkg, options):
 
     # last update, and install date if package is installed
     last_update = dateutil.parser.parse(signoff_pkg["last_update"]).timestamp()
-    attributes.append(format_attr("Last updated", last_update, format="time"))
+    attributes.append(format_attr("Last updated", last_update, format_str="time"))
     if local_pkg:
         attributes.append(
-            format_attr("Install date", local_pkg.installdate, format="time"))
+            format_attr("Install date", local_pkg.installdate, format_str="time"))
 
     # packager and comments
     attributes.append(format_attr("Packager", signoff_pkg["packager"]))

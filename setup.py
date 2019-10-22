@@ -29,7 +29,7 @@ setup(
     install_requires=[
         "click",
         "python-dateutil",
-        "pyalpm",
+        "pyalpm>=0.9.0",
         "requests"
     ],
 
