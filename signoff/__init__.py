@@ -10,6 +10,7 @@ import dateutil.parser
 import pyalpm
 import pycman.pkginfo
 import requests
+import sys
 
 # monkeypatch pycman
 pycman.pkginfo.ATTRNAME_FORMAT = '%-13s : '
@@ -358,7 +359,13 @@ def main(action, uninstalled, signed_off, quiet, username, password, package,
         noconfirm=noconfirm)
 
     # initialize alpm handle and signoff session
-    alpm_handle = pyalpm.Handle("/", options.db_path)
+    try:
+        alpm_handle = pyalpm.Handle("/", options.db_path)
+    except:
+        click.echo("error: could not read alpm database {}".format(options.db_path),
+            err=True)
+        sys.exit(1)
+
     session = SignoffSession(options.username, password)
 
     # fetch and filter signoff packages
