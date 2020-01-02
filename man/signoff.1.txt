@@ -35,16 +35,16 @@ Options
 	Interactively sign off packages.
 
 *-u, \--uninstalled*::
-	Include uinstalled packages when listing.
+	Include uninstalled packages when listing.
 
 *-a, \--signed-off*::
 	Include signed-off packages when listing.
 
 *-q, \--quiet*::
-	The path to the pacman database.
+	Be less verbose when listing packages.
 
 *-b, \--db-path* <dbpath>::
-	Be less verbose when listing packages.
+	pacman database path
 
 *\--username* 'username'::
 	ArchWeb username.
