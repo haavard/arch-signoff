@@ -1,5 +1,7 @@
 # arch-signoff
 
+### Moved to https://github.com/archlinux/arch-signoff
+
 Run `signoff` to get a list of packages you can [sign off][1]. `signoff -i`
 lets you interactively sign off packages. See [asciinema][2] for a demo.
 
